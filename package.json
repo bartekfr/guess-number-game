@@ -1,0 +1,19 @@
+{
+  "name": "number-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "author": "Bartlomiej Fryzowicz",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.5.2",
+    "babel-loader": "^6.2.3",
+    "babel-plugin-transform-object-assign": "^6.5.0",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-react": "^6.5.0",
+    "classnames": "^2.1.3",
+    "keymirror": "^0.1.1",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1"
+  }
+}
