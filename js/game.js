@@ -12,7 +12,9 @@ class NumberGame  {
 		this.shots = 0;
 		this.roundFinished = true;
 		this.game = gameModel;
-		this.game.addListener(this.render.bind(this));
+		this.game.addListener(() => {
+			this.render();
+		});
 
 		this.roundBtn = document.getElementById('new_round');
 		this.number = document.getElementById('number');

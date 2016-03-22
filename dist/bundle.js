@@ -46,112 +46,11 @@
 
 	'use strict';
 
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _events = __webpack_require__(1);
-
 	var _game = __webpack_require__(2);
 
 	var _game2 = _interopRequireDefault(_game);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var userName = '';
-	var gameState = [];
-	var min = 0;
-	var max = 0;
-	var emitter = new _events.EventEmitter();
-
-	var state = {
-		addNewState: function addNewState(state) {
-			gameState.push(state);
-			if (gameState.length > 5) {
-				this.removeOldest();
-			}
-			emitter.emit('change');
-		},
-		removeOldest: function removeOldest() {
-			gameState.shift();
-		},
-		saveGameData: function saveGameData() {
-			localStorage.setItem("game", JSON.stringify(this.gameData));
-		},
-		loadGameData: function loadGameData() {
-			var gameString = localStorage.getItem("game");
-			if (gameString === null) {
-				return false;
-			}
-			var gameDataObject = JSON.parse(gameString);
-			this.gameData = gameDataObject;
-			return true;
-		},
-		reset: function reset() {
-			gameState = [];
-			localStorage.removeItem("game");
-			emitter.emit('change');
-		},
-		addListener: function addListener(callback) {
-			emitter.on('change', callback);
-		}
-	};
-
-	//define properties with getters and setters
-	Object.defineProperty(state, 'user', {
-		get: function get() {
-			return userName;
-		},
-		set: function set(name) {
-			userName = name;
-			emitter.emit('change');
-		}
-	});
-
-	Object.defineProperty(state, 'range', {
-		set: function set(values) {
-			min = values[0];
-			max = values[1];
-			emitter.emit('change');
-		},
-		get: function get() {
-			return [min, max];
-		}
-	});
-
-	Object.defineProperty(state, 'gameData', {
-		get: function get() {
-			return {
-				gameState: gameState,
-				min: min,
-				max: max,
-				user: userName
-			};
-		},
-		set: function set(data) {
-			gameState = data.gameState;
-			min = data.min;
-			max = data.max;
-			userName = data.user;
-			emitter.emit('change');
-		}
-	});
-
-	Object.defineProperty(state, 'currentState', {
-		set: function set(state) {
-			gameState[gameState.length - 1] = state;
-			emitter.emit('change');
-		}
-	});
-
-	Object.defineProperty(state, 'state', {
-		get: function get() {
-			return gameState;
-		}
-	});
-
-	exports.default = state;
-
 
 	window.g = new _game2.default({ min: 1, max: 10 });
 
@@ -483,6 +382,8 @@
 
 	var NumberGame = function () {
 		function NumberGame() {
+			var _this = this;
+
 			var _ref = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
 			var _ref$min = _ref.min;
@@ -499,7 +400,9 @@
 			this.shots = 0;
 			this.roundFinished = true;
 			this.game = _gameState2.default;
-			this.game.addListener(this.render.bind(this));
+			this.game.addListener(function () {
+				_this.render();
+			});
 
 			this.roundBtn = document.getElementById('new_round');
 			this.number = document.getElementById('number');
@@ -756,13 +659,7 @@
 	var state = {
 		addNewState: function addNewState(state) {
 			gameState.push(state);
-			if (gameState.length > 5) {
-				this.removeOldest();
-			}
 			emitter.emit('change');
-		},
-		removeOldest: function removeOldest() {
-			gameState.shift();
 		},
 		saveGameData: function saveGameData() {
 			localStorage.setItem("game", JSON.stringify(this.gameData));

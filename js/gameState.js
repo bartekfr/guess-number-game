@@ -9,13 +9,7 @@ var emitter = new EventEmitter();
 var state = {
 	addNewState: function(state) {
 		gameState.push(state);
-		if (gameState.length > 5) {
-			this.removeOldest();
-		}
 		emitter.emit('change');
-	},
-	removeOldest: function () {
-		gameState.shift();
 	},
 	saveGameData: function() {
 		localStorage.setItem("game", JSON.stringify(this.gameData));
