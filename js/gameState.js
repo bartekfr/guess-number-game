@@ -11,10 +11,10 @@ var state = {
 		gameState.push(state);
 		emitter.emit('change');
 	},
-	saveGameData() {
+	saveGameDataToStorage() {
 		localStorage.setItem("game", JSON.stringify(this.gameData));
 	},
-	loadGameData() {
+	loadGameDataFromStorage() {
 		var gameString = localStorage.getItem("game");
 		if (gameString === null) {
 			return false;
@@ -64,6 +64,9 @@ var state = {
 	set currentState(state) {
 		gameState[gameState.length - 1] = state;
 		emitter.emit('change');
+	},
+	get currentState() {
+		return gameState[gameState.length - 1];
 	},
 	get state() {
 		return gameState;

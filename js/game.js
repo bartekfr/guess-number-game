@@ -21,6 +21,9 @@ class NumberGame  {
 		this.resetBtn = document.getElementById('reset');
 		this.statsConsole = document.getElementById('stats_view');
 		this.numbersButtons = document.getElementById('numbers');
+		this.easyModeBtn = document.getElementById('easy_mode');
+
+		this.easyMode = this.easyModeBtn.checked;
 
 		this.dataLoaded = this.loadState();
 
@@ -50,6 +53,15 @@ class NumberGame  {
 			var n = e.target.getAttribute('data-number');
 			n = parseInt(n, 10);
 			self.guess(n);
+		}, false);
+
+		this.easyModeBtn.addEventListener('click', function(e) {
+			self.easyMode = this.checked;
+			if (self.easyMode) {
+				self.statsConsole.classList.add('easy');
+			} else {
+				self.statsConsole.classList.remove('easy');
+			}
 		}, false);
 	}
 
@@ -83,6 +95,7 @@ class NumberGame  {
 			comp: 0,
 			user: 0,
 			n: this.currentNumber,
+			lastShot: false,
 			shots: 0
 		};
 		this.game.addNewState(this.currentRoundState);
@@ -94,6 +107,7 @@ class NumberGame  {
 		if (this.roundFinished) {
 			return;
 		}
+		this.currentRoundState.lastShot = x;
 		if (x === this.currentNumber) {
 			//user wins
 			this.currentRoundState.user = 1;
@@ -133,34 +147,27 @@ class NumberGame  {
 	stats() {
 		var state = this.game.state;;
 		var l = state.length;
-		var c = 0;
-		var u = 0;
-		var walkovers = 0;
 		if(l === 0) {
 			return "There is no ongoing game";
 		}
-		var [c, u, walkovers] = this.calculateTotalResult(state); // desctructuring :D
 
-		var user = this.game.user;
-		var range = this.game.range;
-		var min = range[0];
-		var max = range[1];
+		//destructuring and state getters :D
+		var [c, u, walkovers] = this.calculateTotalResult(state);
+		var {user, min, max} = this.game.gameData;
+		var {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.game.currentState;
 
-		//last round data
-		var lastRound = state[l - 1];
-		var lastRoundComputer = lastRound.comp;
-		var lastRoundUser = lastRound.user;
 		var resultTxt = '';
 
-		//prepare stats content
+		//prepare stats content html
 		if (this.roundFinished) {
 			//round final result
 			resultTxt = lastRoundComputer ? 'You lost :/' : 'You win. Congrats!';
 			resultTxt += '<br/>Start new round to continue';
 		} else {
 			// ongoing round content
-			let attemptResultTxt = lastRound.shots > 0 ? 'Wrong. Try again ' : 'Guess'; // texts for ongoing round
-			let ongoingRoundTxt = `${attemptResultTxt} (${min} - ${max})`;
+			let helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
+			let attemptResultTxt = shots > 0 ? `Wrong. Try again <span class="help">${helpTxt}</span>` : 'Guess'; // texts for ongoing round
+			let ongoingRoundTxt = `${attemptResultTxt} <br>Range:${min} - ${max}`;
 			resultTxt += `${ongoingRoundTxt} <br/>You still have ${3 - this.shots} attempts`;
 		}
 		//stats full text template
@@ -193,7 +200,7 @@ class NumberGame  {
 
 	saveState() {
 		this.game.currentState = this.currentRoundState;
-		this.game.saveGameData();
+		this.game.saveGameDataToStorage();
 	}
 
 	loadState() {
@@ -201,15 +208,13 @@ class NumberGame  {
 		if (!answer) {
 			return false;
 		}
-		var dataLoaded = this.game.loadGameData();
+		var dataLoaded = this.game.loadGameDataFromStorage();
 		if (dataLoaded === false) {
 			return false;
 		}
 
-		var gameState = this.game.state;
-		var rounds = gameState.length;
 		//init properties
-		this.currentRoundState = gameState[rounds - 1];
+		this.currentRoundState = this.game.currentState;
 		this.currentNumber = this.currentRoundState.n;
 		this.shots = this.currentRoundState.shots;
 		this.roundFinished = this.checkIfGameFinished();

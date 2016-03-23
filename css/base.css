@@ -19,6 +19,14 @@ body * {
 	width: 600px;
 }
 
+.help {
+	display: none;
+}
+
+.easy .help {
+	display: inline;
+}
+
 .toolbox {
 	text-align: center;
 }
