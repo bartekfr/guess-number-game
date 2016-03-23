@@ -7,14 +7,14 @@ var max = 0;
 var emitter = new EventEmitter();
 
 var state = {
-	addNewState: function(state) {
+	addNewState(state) {
 		gameState.push(state);
 		emitter.emit('change');
 	},
-	saveGameData: function() {
+	saveGameData() {
 		localStorage.setItem("game", JSON.stringify(this.gameData));
 	},
-	loadGameData: function() {
+	loadGameData() {
 		var gameString = localStorage.getItem("game");
 		if (gameString === null) {
 			return false;
@@ -23,67 +23,51 @@ var state = {
 		this.gameData = gameDataObject;
 		return true;
 	},
-	reset: function() {
+	reset() {
 		gameState = [];
 		localStorage.removeItem("game");
 		emitter.emit('change');
 	},
-	addListener: function(callback) {
+	addListener(callback) {
 		emitter.on('change', callback);
-	}
-}
-
-//define properties with getters and setters
-Object.defineProperty(state, 'user', {
-	get: function() {
+	},
+	get user() {
 		return userName;
 	},
-	set: function(name) {
+	set user(name) {
 		userName = name;
 		emitter.emit('change');
-	}
-});
-
-Object.defineProperty(state, 'range', {
-	set: function(values) {
+	},
+	get range() {
+		return [min, max];
+	},
+	set range(values) {
 		min = values[0];
 		max = values[1];
 		emitter.emit('change');
 	},
-	get: function() {
-		return [min, max];
-	},
-});
-
-Object.defineProperty(state, 'gameData', {
-	get: function() {
-		return{
+	get gameData() {
+		return {
 			gameState: gameState,
 			min: min,
 			max: max,
 			user: userName
 		}
 	},
-	set: function(data) {
+	set gameData(data) {
 		gameState = data.gameState;
 		min = data.min;
 		max = data.max;
 		userName = data.user;
 		emitter.emit('change');
 	},
-});
-
-Object.defineProperty(state, 'currentState', {
-	set: function(state) {
+	set currentState(state) {
 		gameState[gameState.length - 1] = state;
 		emitter.emit('change');
 	},
-});
-
-Object.defineProperty(state, 'state', {
-	get: function() {
+	get state() {
 		return gameState;
-	},
-});
+	}
+};
 
 export default state;
