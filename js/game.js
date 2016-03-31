@@ -11,19 +11,18 @@ class NumberGame  {
 		this.currentRoundState = null;
 		this.shots = 0;
 		this.roundFinished = true;
-		this.game = gameModel;
-		this.game.addListener(() => {
-			this.render();
-		});
-
+		this.game = gameModel;;
 		this.roundBtn = document.getElementById('new_round');
 		this.number = document.getElementById('number');
 		this.resetBtn = document.getElementById('reset');
 		this.statsConsole = document.getElementById('stats_view');
 		this.numbersButtons = document.getElementById('numbers');
 		this.easyModeBtn = document.getElementById('easy_mode');
-
 		this.easyMode = this.easyModeBtn.checked;
+
+		this.game.addListener(() => {
+			this.render();
+		});
 
 		this.dataLoaded = this.loadState();
 
@@ -51,8 +50,7 @@ class NumberGame  {
 
 		this.numbersButtons.addEventListener('click', function(e) {
 			var n = e.target.getAttribute('data-number');
-			n = parseInt(n, 10);
-			self.guess(n);
+			self.guess(parseInt(n, 10));
 		}, false);
 
 		this.easyModeBtn.addEventListener('click', function(e) {
@@ -71,14 +69,12 @@ class NumberGame  {
 	}
 
 	printNumbers() {
-		var range = this.game.range;
-		var min = range[0];
-		var max = range[1];
-		var n = min;
+		var [min, max] = this.game.range;
 		var str = '';
-		while(n <= max) {
-			str += `<button data-number="${n}" type="button">${n}</button>`;
-			n++;
+
+		while(min <= max) {
+			str += `<button data-number="${min}" type="button">${min}</button>`;
+			min++;
 		}
 		return str;
 	}
@@ -192,9 +188,7 @@ class NumberGame  {
 	}
 
 	drawLots() {
-		var range = this.game.range;
-		var min = range[0];
-		var max = range[1];
+		var [min, max] = this.game.range;
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
