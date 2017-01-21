@@ -52,7 +52,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	window.g = new _game2.default({ min: 1, max: 7, user: "Me" });
+	window.g = new _game2.default({ min: 2, max: 7, user: "Me" });
 
 /***/ },
 /* 1 */
@@ -80,14 +80,13 @@
 		function NumberGame() {
 			var _this = this;
 
-			var _ref = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-			var _ref$min = _ref.min;
-			var min = _ref$min === undefined ? 0 : _ref$min;
-			var _ref$max = _ref.max;
-			var max = _ref$max === undefined ? 10 : _ref$max;
-			var _ref$user = _ref.user;
-			var user = _ref$user === undefined ? "Anonymus" : _ref$user;
+			var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+			    _ref$min = _ref.min,
+			    min = _ref$min === undefined ? 0 : _ref$min,
+			    _ref$max = _ref.max,
+			    max = _ref$max === undefined ? 10 : _ref$max,
+			    _ref$user = _ref.user,
+			    user = _ref$user === undefined ? "Anonymus" : _ref$user;
 
 			_classCallCheck(this, NumberGame);
 
@@ -124,27 +123,27 @@
 		_createClass(NumberGame, [{
 			key: 'initDomEvemnts',
 			value: function initDomEvemnts() {
-				var self = this;
+				var _this2 = this;
 
 				this.roundBtn.addEventListener('click', function () {
-					self.round();
+					_this2.round();
 				}, false);
 
 				this.resetBtn.addEventListener('click', function () {
-					self.finish();
+					_this2.finish();
 				}, false);
 
 				this.numbersButtons.addEventListener('click', function (e) {
 					var n = e.target.getAttribute('data-number');
-					self.guess(parseInt(n, 10));
+					_this2.guess(parseInt(n, 10));
 				}, false);
 
 				this.easyModeBtn.addEventListener('click', function (e) {
-					self.easyMode = this.checked;
-					if (self.easyMode) {
-						self.statsConsole.classList.add('easy');
+					_this2.easyMode = e.target.checked;
+					if (_this2.easyMode) {
+						_this2.statsConsole.classList.add('easy');
 					} else {
-						self.statsConsole.classList.remove('easy');
+						_this2.statsConsole.classList.remove('easy');
 					}
 				}, false);
 			}
@@ -157,10 +156,9 @@
 		}, {
 			key: 'printNumbers',
 			value: function printNumbers() {
-				var _game$range = _slicedToArray(this.game.range, 2);
-
-				var min = _game$range[0];
-				var max = _game$range[1];
+				var _game$range = _slicedToArray(this.game.range, 2),
+				    min = _game$range[0],
+				    max = _game$range[1];
 
 				var str = '';
 
@@ -246,23 +244,22 @@
 
 				//destructuring and state getters :D
 
-				var _calculateTotalResult = this.calculateTotalResult(state);
+				var _calculateTotalResult = this.calculateTotalResult(state),
+				    _calculateTotalResult2 = _slicedToArray(_calculateTotalResult, 3),
+				    c = _calculateTotalResult2[0],
+				    u = _calculateTotalResult2[1],
+				    walkovers = _calculateTotalResult2[2];
 
-				var _calculateTotalResult2 = _slicedToArray(_calculateTotalResult, 3);
-
-				var c = _calculateTotalResult2[0];
-				var u = _calculateTotalResult2[1];
-				var walkovers = _calculateTotalResult2[2];
-				var _game$gameData = this.game.gameData;
-				var user = _game$gameData.user;
-				var min = _game$gameData.min;
-				var max = _game$gameData.max;
-				var _game$currentState = this.game.currentState;
-				var lastRoundComputer = _game$currentState.comp;
-				var lastRoundUser = _game$currentState.user;
-				var lastShot = _game$currentState.lastShot;
-				var shots = _game$currentState.shots;
-				var n = _game$currentState.n;
+				var _game$gameData = this.game.gameData,
+				    user = _game$gameData.user,
+				    min = _game$gameData.min,
+				    max = _game$gameData.max;
+				var _game$currentState = this.game.currentState,
+				    lastRoundComputer = _game$currentState.comp,
+				    lastRoundUser = _game$currentState.user,
+				    lastShot = _game$currentState.lastShot,
+				    shots = _game$currentState.shots,
+				    n = _game$currentState.n;
 
 
 				var resultTxt = '';
@@ -276,7 +273,7 @@
 					// ongoing round content
 					var helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
 					var attemptResultTxt = shots > 0 ? 'Wrong. Try again <span class="help">' + helpTxt + '</span>' : 'Guess'; // texts for ongoing round
-					var ongoingRoundTxt = attemptResultTxt + ' <br>Range:' + min + ' - ' + max;
+					var ongoingRoundTxt = attemptResultTxt + ' <br>Range: ' + min + ' - ' + max;
 					resultTxt += ongoingRoundTxt + ' <br/>You still have ' + (3 - this.shots) + ' attempts';
 				}
 				//stats full text template
@@ -302,10 +299,9 @@
 		}, {
 			key: 'drawLots',
 			value: function drawLots() {
-				var _game$range2 = _slicedToArray(this.game.range, 2);
-
-				var min = _game$range2[0];
-				var max = _game$range2[1];
+				var _game$range2 = _slicedToArray(this.game.range, 2),
+				    min = _game$range2[0],
+				    max = _game$range2[1];
 
 				return Math.floor(Math.random() * (max - min + 1)) + min;
 			}
@@ -501,8 +497,12 @@
 	      er = arguments[1];
 	      if (er instanceof Error) {
 	        throw er; // Unhandled 'error' event
+	      } else {
+	        // At least give some kind of context to the user
+	        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+	        err.context = er;
+	        throw err;
 	      }
-	      throw TypeError('Uncaught, unspecified "error" event.');
 	    }
 	  }
 

@@ -38,27 +38,25 @@ class NumberGame  {
 	}
 
 	initDomEvemnts() {
-		var self = this;
-
-		this.roundBtn.addEventListener('click', function() {
-			self.round();
+		this.roundBtn.addEventListener('click', () => {
+			this.round();
 		}, false);
 
-		this.resetBtn.addEventListener('click', function() {
-			self.finish();
+		this.resetBtn.addEventListener('click', () => {
+			this.finish();
 		}, false);
 
-		this.numbersButtons.addEventListener('click', function(e) {
+		this.numbersButtons.addEventListener('click', (e) => {
 			var n = e.target.getAttribute('data-number');
-			self.guess(parseInt(n, 10));
+			this.guess(parseInt(n, 10));
 		}, false);
 
-		this.easyModeBtn.addEventListener('click', function(e) {
-			self.easyMode = this.checked;
-			if (self.easyMode) {
-				self.statsConsole.classList.add('easy');
+		this.easyModeBtn.addEventListener('click', (e) => {
+			this.easyMode = e.target.checked;
+			if (this.easyMode) {
+				this.statsConsole.classList.add('easy');
 			} else {
-				self.statsConsole.classList.remove('easy');
+				this.statsConsole.classList.remove('easy');
 			}
 		}, false);
 	}
@@ -163,7 +161,7 @@ class NumberGame  {
 			// ongoing round content
 			let helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
 			let attemptResultTxt = shots > 0 ? `Wrong. Try again <span class="help">${helpTxt}</span>` : 'Guess'; // texts for ongoing round
-			let ongoingRoundTxt = `${attemptResultTxt} <br>Range:${min} - ${max}`;
+			let ongoingRoundTxt = `${attemptResultTxt} <br>Range: ${min} - ${max}`;
 			resultTxt += `${ongoingRoundTxt} <br/>You still have ${3 - this.shots} attempts`;
 		}
 		//stats full text template
