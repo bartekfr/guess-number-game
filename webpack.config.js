@@ -2,8 +2,10 @@ module.exports =  {
 	entry: __dirname + "/js/main.js",
 	output: {
 		path: __dirname + '/dist',
-		filename: "bundle.js"
+		filename: "bundle.js",
+		publicPath: '/dist'
 	},
+	devtool: '#source-map',
 	module: {
 		loaders: [{
 			loader: 'babel',

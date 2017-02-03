@@ -5,6 +5,9 @@
   "main": "",
   "author": "Bartlomiej Fryzowicz",
   "license": "ISC",
+  "scripts": {
+    "start": "node_modules/.bin/webpack-dev-server --inline"
+  },
   "devDependencies": {
     "babel-core": "^6.5.2",
     "babel-loader": "^6.2.3",

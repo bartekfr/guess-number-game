@@ -6,12 +6,11 @@ class NumberGame  {
 		max = 10,
 		user = "Anonymus"
 	} = {}) {
-
 		this.currentNumber;
 		this.currentRoundState = null;
 		this.shots = 0;
 		this.roundFinished = true;
-		this.game = gameModel;;
+		this.store = gameModel;;
 		this.roundBtn = document.getElementById('new_round');
 		this.number = document.getElementById('number');
 		this.resetBtn = document.getElementById('reset');
@@ -20,7 +19,7 @@ class NumberGame  {
 		this.easyModeBtn = document.getElementById('easy_mode');
 		this.easyMode = this.easyModeBtn.checked;
 
-		this.game.addListener(() => {
+		this.store.addListener(() => {
 			this.render();
 		});
 
@@ -31,7 +30,7 @@ class NumberGame  {
 		*/
 		if (!this.dataLoaded) {
 			this.setRange(min, max);
-			this.game.user = user;
+			this.store.user = user;
 		}
 
 		this.initDomEvemnts();
@@ -67,7 +66,7 @@ class NumberGame  {
 	}
 
 	printNumbers() {
-		var [min, max] = this.game.range;
+		var [min, max] = this.store.range;
 		var str = '';
 
 		while(min <= max) {
@@ -92,7 +91,7 @@ class NumberGame  {
 			lastShot: false,
 			shots: 0
 		};
-		this.game.addNewState(this.currentRoundState);
+		this.store.addNewState(this.currentRoundState);
 		this.saveState();
 	}
 
@@ -121,11 +120,11 @@ class NumberGame  {
 
 	finish() {
 		this.roundFinished = true;
-		this.game.reset();
+		this.store.reset();
 	}
 
 	setUser(name) {
-		this.game.user = name;
+		this.store.user = name;
 		this.saveState();
 	}
 
@@ -134,12 +133,12 @@ class NumberGame  {
 			max = min + 4;
 			console.log("Range must include at least 4 numbers.");
 		}
-		this.game.range = [min, max];
+		this.store.range = [min, max];
 		this.finish();//reset stats
 	}
 
 	stats() {
-		var state = this.game.state;;
+		var state = this.store.state;;
 		var l = state.length;
 		if(l === 0) {
 			return "There is no ongoing game";
@@ -147,8 +146,8 @@ class NumberGame  {
 
 		//destructuring and state getters :D
 		var [c, u, walkovers] = this.calculateTotalResult(state);
-		var {user, min, max} = this.game.gameData;
-		var {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.game.currentState;
+		var {user, min, max} = this.store.gameData;
+		var {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.store.currentState;
 
 		var resultTxt = '';
 
@@ -186,13 +185,13 @@ class NumberGame  {
 	}
 
 	drawLots() {
-		var [min, max] = this.game.range;
+		var [min, max] = this.store.range;
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
 	saveState() {
-		this.game.currentState = this.currentRoundState;
-		this.game.saveGameDataToStorage();
+		this.store.currentState = this.currentRoundState;
+		this.store.saveGameDataToStorage();
 	}
 
 	loadState() {
@@ -200,13 +199,13 @@ class NumberGame  {
 		if (!answer) {
 			return false;
 		}
-		var dataLoaded = this.game.loadGameDataFromStorage();
+		var dataLoaded = this.store.loadGameDataFromStorage();
 		if (dataLoaded === false) {
 			return false;
 		}
 
 		//init properties
-		this.currentRoundState = this.game.currentState;
+		this.currentRoundState = this.store.currentState;
 		this.currentNumber = this.currentRoundState.n;
 		this.shots = this.currentRoundState.shots;
 		this.roundFinished = this.checkIfGameFinished();
