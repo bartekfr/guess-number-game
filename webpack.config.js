@@ -7,14 +7,16 @@ module.exports =  {
 	},
 	devtool: '#source-map',
 	module: {
-		loaders: [{
-			loader: 'babel',
+		rules: [{
 			exclude: /node_modules/,
 			test: /\.js/,
-			query: {
-				presets: ['es2015'],
-				plugins: ["transform-object-assign"]
-			}
+			use: [{
+				loader: 'babel-loader',
+				options: {
+					presets: ['es2015'],
+					plugins: ["transform-object-assign"]
+				}
+			}]
 		}]
 	}
 }
