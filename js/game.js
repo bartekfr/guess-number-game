@@ -1,4 +1,4 @@
-import gameModel from './gameState';
+import GameModel from './gameState';
 
 class NumberGame  {
 	constructor({
@@ -10,7 +10,7 @@ class NumberGame  {
 		this.currentRoundState = null;
 		this.shots = 0;
 		this.roundFinished = true;
-		this.store = gameModel;;
+		this.store = new GameModel();
 		this.roundBtn = document.getElementById('new_round');
 		this.number = document.getElementById('number');
 		this.resetBtn = document.getElementById('reset');
@@ -91,7 +91,7 @@ class NumberGame  {
 			lastShot: false,
 			shots: 0
 		};
-		this.store.addNewState(this.currentRoundState);
+		this.store.addNewRound(this.currentRoundState);
 		this.saveState();
 	}
 
@@ -138,7 +138,7 @@ class NumberGame  {
 	}
 
 	stats() {
-		var state = this.store.state;;
+		var state = this.store.results;;
 		var l = state.length;
 		if(l === 0) {
 			return "There is no ongoing game";

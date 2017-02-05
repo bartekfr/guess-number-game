@@ -1,19 +1,20 @@
 import {EventEmitter} from 'events';
 
-var userName = '';
-var gameState = [];
-var min = 0;
-var max = 0;
-var emitter = new EventEmitter();
-
-var state = {
-	addNewState(state) {
-		gameState.push(state);
-		emitter.emit('change');
-	},
+class state {
+	constructor() {
+		this.userName = '';
+		this.gameResults = [];
+		this.min = 0;
+		this.max = 0;
+		this.emitter = new EventEmitter();
+	}
+	addNewRound(state) {
+		this.gameResults.push(state);
+		this.emitter.emit('change');
+	}
 	saveGameDataToStorage() {
 		localStorage.setItem("game", JSON.stringify(this.gameData));
-	},
+	}
 	loadGameDataFromStorage() {
 		var gameString = localStorage.getItem("game");
 		if (gameString === null) {
@@ -22,54 +23,54 @@ var state = {
 		var gameDataObject = JSON.parse(gameString);
 		this.gameData = gameDataObject;
 		return true;
-	},
+	}
 	reset() {
-		gameState = [];
+		this.gameResults = [];
 		localStorage.removeItem("game");
-		emitter.emit('change');
-	},
+		this.emitter.emit('change');
+	}
 	addListener(callback) {
-		emitter.on('change', callback);
-	},
+		this.emitter.on('change', callback);
+	}
 	get user() {
-		return userName;
-	},
+		return this.userName;
+	}
 	set user(name) {
-		userName = name;
-		emitter.emit('change');
-	},
+		this.userName = name;
+		this.emitter.emit('change');
+	}
 	get range() {
-		return [min, max];
-	},
+		return [this.min, this.max];
+	}
 	set range(values) {
-		min = values[0];
-		max = values[1];
-		emitter.emit('change');
-	},
+		this.min = values[0];
+		this.max = values[1];
+		this.emitter.emit('change');
+	}
 	get gameData() {
 		return {
-			gameState: gameState,
-			min: min,
-			max: max,
-			user: userName
+			gameResults: this.gameResults,
+			min: this.min,
+			max: this.max,
+			user: this.userName
 		}
-	},
+	}
 	set gameData(data) {
-		gameState = data.gameState;
-		min = data.min;
-		max = data.max;
-		userName = data.user;
-		emitter.emit('change');
-	},
+		this.gameResults = data.gameResults;
+		this.min = data.min;
+		this.max = data.max;
+		this.userName = data.user;
+		this.emitter.emit('change');
+	}
 	set currentState(state) {
-		gameState[gameState.length - 1] = state;
-		emitter.emit('change');
-	},
+		this.gameResults[this.gameResults.length - 1] = state;
+		this.emitter.emit('change');
+	}
 	get currentState() {
-		return gameState[gameState.length - 1];
-	},
-	get state() {
-		return gameState;
+		return this.gameResults[this.gameResults.length - 1];
+	}
+	get results() {
+		return this.gameResults;
 	}
 };
 
