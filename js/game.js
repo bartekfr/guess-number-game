@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/fromEvent';
 import GameModel from './gameState';
 
 class NumberGame  {
@@ -37,27 +39,28 @@ class NumberGame  {
 	}
 
 	initDomEvemnts() {
-		this.roundBtn.addEventListener('click', () => {
+		Observable.fromEvent(this.roundBtn, 'click').subscribe(() => {
 			this.round();
-		}, false);
+		});
 
-		this.resetBtn.addEventListener('click', () => {
+		Observable.fromEvent(this.resetBtn, 'click').subscribe(() => {
 			this.finish();
-		}, false);
+		});
 
-		this.numbersButtons.addEventListener('click', (e) => {
+
+		Observable.fromEvent(this.numbersButtons, 'click').subscribe((e) => {
 			var n = e.target.getAttribute('data-number');
 			this.guess(parseInt(n, 10));
-		}, false);
+		});
 
-		this.easyModeBtn.addEventListener('click', (e) => {
+		Observable.fromEvent(this.easyModeBtn, 'click').subscribe((e) => {
 			this.easyMode = e.target.checked;
 			if (this.easyMode) {
 				this.statsConsole.classList.add('easy');
 			} else {
 				this.statsConsole.classList.remove('easy');
 			}
-		}, false);
+		});
 	}
 
 	render() {
@@ -160,12 +163,13 @@ class NumberGame  {
 			// ongoing round content
 			let helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
 			let attemptResultTxt = shots > 0 ? `Wrong. Try again <span class="help">${helpTxt}</span>` : 'Guess'; // texts for ongoing round
-			let ongoingRoundTxt = `${attemptResultTxt} <br>Range: ${min} - ${max}`;
-			resultTxt += `${ongoingRoundTxt} <br/>You still have ${3 - this.shots} attempts`;
+			resultTxt += `${attemptResultTxt} <br/>You still have ${3 - this.shots} attempts`;
 		}
 		//stats full text template
-		var statsText = `<p>${resultTxt}</p>
-		<h3>Computer ${c} : ${u} ${user}</h3>`;
+		var statsText = `
+				<p>${resultTxt}</p>
+				<h3>Computer ${c} : ${u} ${user}</h3>
+			`;
 
 		return statsText;
 	}
