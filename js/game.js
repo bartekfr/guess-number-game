@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/fromEvent';
 import GameModel from './gameState';
 
@@ -51,10 +52,11 @@ class NumberGame  {
 		});
 
 
-		Observable.fromEvent(this.numbersButtons, 'click').subscribe((e) => {
-			var n = e.target.getAttribute('data-number');
-			this.guess(parseInt(n, 10));
-		});
+		Observable.fromEvent(this.numbersButtons, 'click')
+			.map((e) => parseInt(e.target.getAttribute('data-number'), 10))
+			.subscribe((n) => {
+				this.guess(n);
+			});
 
 		Observable.fromEvent(this.easyModeBtn, 'click').subscribe((e) => {
 			this.easyMode = e.target.checked;
