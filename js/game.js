@@ -6,7 +6,7 @@ class NumberGame  {
 	constructor({
 		min = 0,
 		max = 10,
-		user = "Anonymus"
+		userName = "Anonymus"
 	} = {}) {
 		this.currentNumber;
 		this.currentRoundState = null;
@@ -31,8 +31,11 @@ class NumberGame  {
 			if user continues game from previous session ignore parameters passed to constructor
 		*/
 		if (!this.dataLoaded) {
-			this.setRange(min, max);
-			this.store.user = user;
+			this.store.setState({
+				min,
+				max,
+				userName
+			});
 		}
 
 		this.initDomEvemnts();
@@ -69,8 +72,8 @@ class NumberGame  {
 	}
 
 	printNumbers() {
-		var [min, max] = this.store.range;
-		var str = '';
+		let {min, max} = this.store.state;
+		let str = '';
 
 		while(min <= max) {
 			str += `<button data-number="${min}" type="button">${min}</button>`;
@@ -98,6 +101,10 @@ class NumberGame  {
 		this.saveState();
 	}
 
+	getCurrentRoundFromState() {
+		return this.store.state.gameResults[this.store.state.gameResults.length - 1];
+	}
+
 	guess(x) {
 		this.shots++;
 		if (this.roundFinished) {
@@ -106,19 +113,30 @@ class NumberGame  {
 		this.currentRoundState.lastShot = x;
 		if (x === this.currentNumber) {
 			//user wins
-			this.currentRoundState.user = 1;
-			this.roundFinished = true;
+			this.guessSuccess();
 		} else {
 			//game continues
 			let remainedTries = 3 - this.shots;
 			if (!remainedTries) {
-				this.currentRoundState.comp = 1;
-				this.roundFinished = true;
+				this.guessFailure();
 			}
 
 		}
 		this.currentRoundState.shots = this.shots;
 		this.saveState();
+	}
+
+	guessSuccess() {
+		this.currentRoundState.user = 1;
+		this.roundFinished = true;
+	}
+
+	guessFailure() {
+		let remainedTries = 3 - this.shots;
+		if (!remainedTries) {
+			this.currentRoundState.comp = 1;
+			this.roundFinished = true;
+		}
 	}
 
 	finish() {
@@ -136,12 +154,12 @@ class NumberGame  {
 			max = min + 4;
 			console.log("Range must include at least 4 numbers.");
 		}
-		this.store.range = [min, max];
+		this.store.setState({min, max});
 		this.finish();//reset stats
 	}
 
 	stats() {
-		var state = this.store.results;;
+		var state = this.store.state.gameResults;
 		var l = state.length;
 		if(l === 0) {
 			return "There is no ongoing game";
@@ -149,8 +167,8 @@ class NumberGame  {
 
 		//destructuring and state getters :D
 		var [c, u, walkovers] = this.calculateTotalResult(state);
-		var {user, min, max} = this.store.gameData;
-		var {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.store.currentState;
+		var {userName, min, max} = this.store.state;
+		var {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.getCurrentRoundFromState();
 
 		var resultTxt = '';
 
@@ -168,7 +186,7 @@ class NumberGame  {
 		//stats full text template
 		var statsText = `
 				<p>${resultTxt}</p>
-				<h3>Computer ${c} : ${u} ${user}</h3>
+				<h3>Computer ${c} : ${u} ${userName}</h3>
 			`;
 
 		return statsText;
@@ -189,12 +207,16 @@ class NumberGame  {
 	}
 
 	drawLots() {
-		var [min, max] = this.store.range;
+		let {min, max} = this.store.state;
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
 	saveState() {
-		this.store.currentState = this.currentRoundState;
+		let gameResults = this.store.state.gameResults;
+		gameResults[gameResults.length - 1] = this.currentRoundState;
+		this.store.setState({
+			gameResults: gameResults
+		});
 		this.store.saveGameDataToStorage();
 	}
 
@@ -209,7 +231,7 @@ class NumberGame  {
 		}
 
 		//init properties
-		this.currentRoundState = this.store.currentState;
+		this.currentRoundState = this.getCurrentRoundFromState();
 		this.currentNumber = this.currentRoundState.n;
 		this.shots = this.currentRoundState.shots;
 		this.roundFinished = this.checkIfGameFinished();
