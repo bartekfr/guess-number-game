@@ -1,8 +1,8 @@
-import {EventEmitter} from 'events';
+import { Subject } from 'rxjs/Subject';
 
 class state {
 	constructor() {
-		this.emitter = new EventEmitter();
+		this.emitter = new Subject();
 		this.state = {
 			min: 0,
 			max: 2,
@@ -14,7 +14,7 @@ class state {
 		this.setState({
 			gameResults: this.state.gameResults.concat(state)
 		})
-		this.emitter.emit('change');
+		this.emitter.next();
 	}
 	saveGameDataToStorage() {
 		localStorage.setItem("game", JSON.stringify(this.state));
@@ -34,14 +34,14 @@ class state {
 			gameResults: []
 		})
 		localStorage.removeItem("game");
-		this.emitter.emit('change');
+		this.emitter.next();
 	}
-	addListener(callback) {
-		this.emitter.on('change', callback);
+	subscribe(callback) {
+		this.emitter.subscribe(() => callback());
 	}
 	setState(state) {
 		this.state = Object.assign({}, this.state, state);
-		this.emitter.emit('change');
+		this.emitter.next();
 	}
 };
 

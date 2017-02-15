@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/filter';
 import 'rxjs/add/observable/fromEvent';
 import GameModel from './gameState';
 
@@ -22,7 +23,7 @@ class NumberGame  {
 		this.easyModeBtn = document.getElementById('easy_mode');
 		this.easyMode = this.easyModeBtn.checked;
 
-		this.store.addListener(() => {
+		this.store.subscribe(() => {
 			this.render();
 		});
 
@@ -54,6 +55,7 @@ class NumberGame  {
 
 		Observable.fromEvent(this.numbersButtons, 'click')
 			.map((e) => parseInt(e.target.getAttribute('data-number'), 10))
+			.filter(() => !this.roundFinished)
 			.subscribe((n) => {
 				this.guess(n);
 			});
@@ -109,9 +111,6 @@ class NumberGame  {
 
 	guess(x) {
 		this.shots++;
-		if (this.roundFinished) {
-			return;
-		}
 		this.currentRoundState.lastShot = x;
 		if (x === this.currentNumber) {
 			//user wins
