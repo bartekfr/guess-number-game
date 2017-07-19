@@ -13,7 +13,6 @@ class NumberGame  {
 		max = 10,
 		userName = "Anonymus"
 	} = {}) {
-		this.currentNumber;
 		this.currentRoundState = {};
 		this.store = new GameModel();
 		this.roundBtn = document.getElementById('new_round');
@@ -90,15 +89,14 @@ class NumberGame  {
 			this.saveState();
 		}
 
-		this.currentNumber = this.drawLots();
 		this.currentRoundState = {
 			comp: 0,
 			user: 0,
-			n: this.currentNumber,
+			n: this.drawLots(),
 			lastShot: false,
 			shots: 0
 		};
-		this.store.addNewRound(this.currentRoundState);
+		this.store.addNewRound({...this.currentRoundState});
 		this.saveState();
 	}
 
@@ -109,7 +107,7 @@ class NumberGame  {
 	guess(x) {
 		this.currentRoundState.shots ++;
 		this.currentRoundState.lastShot = x;
-		if (x === this.currentNumber) {
+		if (x === this.currentRoundState.n) {
 			//user wins
 			this.guessSuccess();
 		} else {
@@ -148,16 +146,26 @@ class NumberGame  {
 		this.finish();//reset stats
 	}
 
+	statsTextForFinishedGame(computerWin) {
+		let resultTxt = computerWin ? 'You lost :/' : 'You win. Congrats!';
+		return resultTxt += '<br/>Start new round to continue';
+	}
+
+	statsTextForOngoingGame(lastShot, shots, n) {
+		let helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
+		let attemptResultTxt = shots > 0 ? `Wrong. Try again <span class="help">${helpTxt}</span>` : 'Guess'; // texts for ongoing round
+		return `${attemptResultTxt} <br/>You still have ${3 - shots} attempts`;
+	}
+
 	stats() {
 		let state = this.store.state.gameResults;
-		let l = state.length;
-		if (l === 0) {
+		if (!state.length) {
 			this.statsConsole.innerHTML = ''
-			return false;
+			return;
 		}
 
 		//destructuring and state getters :D
-		let { c, u, walkovers } = this.calculateTotalResult(state);
+		let { c, u } = this.calculateTotalResult(state);
 		let { userName, min, max } = this.store.state;
 		let {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.currentRoundState;
 
@@ -166,32 +174,24 @@ class NumberGame  {
 		//prepare stats content html
 		if (this.checkIfGameFinished()) {
 			//round final result
-			resultTxt = lastRoundComputer ? 'You lost :/' : 'You win. Congrats!';
-			resultTxt += '<br/>Start new round to continue';
+			resultTxt = this.statsTextForFinishedGame(lastRoundComputer);
 		} else {
 			// ongoing round content
-			let helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
-			let attemptResultTxt = shots > 0 ? `Wrong. Try again <span class="help">${helpTxt}</span>` : 'Guess'; // texts for ongoing round
-			resultTxt += `${attemptResultTxt} <br/>You still have ${3 - shots} attempts`;
+			resultTxt = this.statsTextForOngoingGame(lastShot, shots, n);
 		}
 		//stats full text template
-		var statsText = `
+		this.statsConsole.innerHTML = `
 				<p>${resultTxt}</p>
 				<h3>Computer ${c} : ${u} ${userName}</h3>
 			`;
-
-		this.statsConsole.innerHTML = statsText;
 	}
 
 	calculateTotalResult(state) {
 		return state.reduce(function(acc, v, i) {
 			acc.u += v.user;
 			acc.c += v.comp;
-			if(v.comp === 1 && v.shots < 3) {
-				acc.walkovers++;
-			}
 			return acc;
-		}, {c: 0, u: 0, walkovers: 0});
+		}, {c: 0, u: 0 });
 
 	}
 
@@ -202,7 +202,7 @@ class NumberGame  {
 
 	saveState() {
 		let gameResultsCopy = this.store.state.gameResults.slice();
-		gameResultsCopy[gameResultsCopy.length - 1] = this.currentRoundState;
+		gameResultsCopy[gameResultsCopy.length - 1] = {...this.currentRoundState};
 
 		this.store.setState({
 			gameResults: gameResultsCopy
@@ -211,18 +211,17 @@ class NumberGame  {
 	}
 
 	loadState() {
-		var answer = confirm("Do you want load previous game?");
+		let answer = confirm("Do you want load previous game?");
 		if (!answer) {
 			return false;
 		}
-		var dataLoaded = this.store.loadGameDataFromStorage();
+		let dataLoaded = this.store.loadGameDataFromStorage();
 		if (dataLoaded === false) {
 			return false;
 		}
 
 		//init properties
 		this.currentRoundState = {...this.getCurrentRoundFromState()};
-		this.currentNumber = this.currentRoundState.n;
 
 		this.render(this.store.state);
 		return true;
