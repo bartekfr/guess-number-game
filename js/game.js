@@ -14,9 +14,7 @@ class NumberGame  {
 		userName = "Anonymus"
 	} = {}) {
 		this.currentNumber;
-		this.currentRoundState = null;
-		this.shots = 0;
-		this.roundFinished = true;
+		this.currentRoundState = {};
 		this.store = new GameModel();
 		this.roundBtn = document.getElementById('new_round');
 		this.number = document.getElementById('number');
@@ -55,10 +53,9 @@ class NumberGame  {
 			this.finish();
 		});
 
-
 		Observable.fromEvent(this.numbersButtons, 'click')
 			.map((e) => parseInt(e.target.getAttribute('data-number'), 10))
-			.filter(() => !this.roundFinished)
+			.filter(() => !this.checkIfGameFinished())
 			.subscribe((n) => {
 				this.guess(n);
 			});
@@ -79,7 +76,7 @@ class NumberGame  {
 	}
 
 	printNumbers() {
-		let {min, max} = this.store.state;
+		let { min, max } = this.store.state;
 		Observable.range(min, max - min + 1)
 			.reduce((str, n) => str += `<button data-number="${n}" type="button">${n}</button>`, '')
 			.last()
@@ -88,12 +85,11 @@ class NumberGame  {
 	}
 
 	round() {
-		if (!this.roundFinished) {
+		if (!this.checkIfGameFinished()) {
 			this.currentRoundState.comp = 1;
 			this.saveState();
 		}
-		this.roundFinished = false;
-		this.shots = 0;
+
 		this.currentNumber = this.drawLots();
 		this.currentRoundState = {
 			comp: 0,
@@ -111,20 +107,15 @@ class NumberGame  {
 	}
 
 	guess(x) {
-		this.shots++;
+		this.currentRoundState.shots ++;
 		this.currentRoundState.lastShot = x;
 		if (x === this.currentNumber) {
 			//user wins
 			this.guessSuccess();
 		} else {
-			//game continues
-			let remainedTries = 3 - this.shots;
-			if (!remainedTries) {
-				this.guessFailure();
-			}
+			this.guessFailure();
 
 		}
-		this.currentRoundState.shots = this.shots;
 		this.saveState();
 	}
 
@@ -133,10 +124,8 @@ class NumberGame  {
 	}
 
 	guessFailure() {
-		let remainedTries = 3 - this.shots;
-		if (!remainedTries) {
+		if (this.currentRoundState.shots === 3) {
 			this.currentRoundState.comp = 1;
-			this.roundFinished = true;
 		}
 	}
 
@@ -170,12 +159,12 @@ class NumberGame  {
 		//destructuring and state getters :D
 		let { c, u, walkovers } = this.calculateTotalResult(state);
 		let { userName, min, max } = this.store.state;
-		let {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.getCurrentRoundFromState();
+		let {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.currentRoundState;
 
 		let resultTxt = '';
 
 		//prepare stats content html
-		if (this.roundFinished) {
+		if (this.checkIfGameFinished()) {
 			//round final result
 			resultTxt = lastRoundComputer ? 'You lost :/' : 'You win. Congrats!';
 			resultTxt += '<br/>Start new round to continue';
@@ -183,7 +172,7 @@ class NumberGame  {
 			// ongoing round content
 			let helpTxt = lastShot > n ? 'Try smaller number' : 'Try greater number';
 			let attemptResultTxt = shots > 0 ? `Wrong. Try again <span class="help">${helpTxt}</span>` : 'Guess'; // texts for ongoing round
-			resultTxt += `${attemptResultTxt} <br/>You still have ${3 - this.shots} attempts`;
+			resultTxt += `${attemptResultTxt} <br/>You still have ${3 - shots} attempts`;
 		}
 		//stats full text template
 		var statsText = `
@@ -212,11 +201,11 @@ class NumberGame  {
 	}
 
 	saveState() {
-		//WRONG! Mutates state directly - TODO: refactor using immutable data
-		let gameResults = this.store.state.gameResults;
-		gameResults[gameResults.length - 1] = this.currentRoundState;
+		let gameResultsCopy = this.store.state.gameResults.slice();
+		gameResultsCopy[gameResultsCopy.length - 1] = this.currentRoundState;
+
 		this.store.setState({
-			gameResults: gameResults
+			gameResults: gameResultsCopy
 		});
 		this.store.saveGameDataToStorage();
 	}
@@ -232,20 +221,16 @@ class NumberGame  {
 		}
 
 		//init properties
-		this.currentRoundState = this.getCurrentRoundFromState();
+		this.currentRoundState = {...this.getCurrentRoundFromState()};
 		this.currentNumber = this.currentRoundState.n;
-		this.shots = this.currentRoundState.shots;
-		this.roundFinished = this.checkIfGameFinished();
 
 		this.render(this.store.state);
 		return true;
 	}
 
 	checkIfGameFinished() {
-		if (!this.store.state.gameResults.length) {
-			return true;
-		}
-		return this.currentRoundState.user || this.currentRoundState.comp || this.currentRoundState.shots > 3;
+		let isFinished = this.currentRoundState && (this.currentRoundState.user || this.currentRoundState.comp || this.currentRoundState.shots >= 3);
+		return !!isFinished;
 	}
 };
 
