@@ -224,7 +224,7 @@ class NumberGame  {
 	}
 
 	checkIfGameFinished() {
-		let isFinished = this.currentRoundState && (this.currentRoundState.user || this.currentRoundState.comp || this.currentRoundState.shots >= 3);
+		let isFinished = this.currentRoundState.user || this.currentRoundState.comp || this.currentRoundState.shots >= 3;
 		return !!isFinished;
 	}
 };
