@@ -100,10 +100,6 @@ class NumberGame  {
 		this.saveState();
 	}
 
-	getCurrentRoundFromState() {
-		return this.store.state.gameResults[this.store.state.gameResults.length - 1];
-	}
-
 	guess(x) {
 		this.currentRoundState.shots ++;
 		this.currentRoundState.lastShot = x;
@@ -221,7 +217,7 @@ class NumberGame  {
 		}
 
 		//init properties
-		this.currentRoundState = {...this.getCurrentRoundFromState()};
+		this.currentRoundState = {...this.store.lastRound};
 
 		this.render(this.store.state);
 		return true;

@@ -10,6 +10,9 @@ class state {
 			gameResults: []
 		}
 	}
+	get lastRound() {
+		return  this.state.gameResults[this.state.gameResults.length - 1];
+	}
 	addNewRound(state) {
 		this.setState({
 			gameResults: this.state.gameResults.concat(state)
