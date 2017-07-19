@@ -101,7 +101,7 @@ class NumberGame  {
 	}
 
 	guess(x) {
-		this.currentRoundState.shots ++;
+		this.currentRoundState.shots++;
 		this.currentRoundState.lastShot = x;
 		if (x === this.currentRoundState.n) {
 			//user wins
