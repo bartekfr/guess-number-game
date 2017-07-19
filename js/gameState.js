@@ -14,7 +14,7 @@ class state {
 		this.setState({
 			gameResults: this.state.gameResults.concat(state)
 		})
-		this.emitter.next();
+		this.emitter.next(this.state);
 	}
 	saveGameDataToStorage() {
 		localStorage.setItem("game", JSON.stringify(this.state));
@@ -34,14 +34,14 @@ class state {
 			gameResults: []
 		})
 		localStorage.removeItem("game");
-		this.emitter.next();
+		this.emitter.next(this.state);
 	}
 	subscribe(callback) {
-		this.emitter.subscribe(() => callback());
+		this.emitter.subscribe(callback);
 	}
 	setState(state) {
 		this.state = Object.assign({}, this.state, state);
-		this.emitter.next();
+		this.emitter.next(this.state);
 	}
 };
 

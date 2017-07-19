@@ -1,7 +1,10 @@
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/last';
 import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/reduce';
 import 'rxjs/add/observable/fromEvent';
+import 'rxjs/add/observable/range';
 import GameModel from './gameState';
 
 class NumberGame  {
@@ -23,8 +26,8 @@ class NumberGame  {
 		this.easyModeBtn = document.getElementById('easy_mode');
 		this.easyMode = this.easyModeBtn.checked;
 
-		this.store.subscribe(() => {
-			this.render();
+		this.store.subscribe((state) => {
+			this.render(state);
 		});
 
 		this.dataLoaded = this.loadState();
@@ -70,20 +73,18 @@ class NumberGame  {
 		});
 	}
 
-	render() {
-		this.numbersButtons.innerHTML = this.printNumbers();
-		this.statsConsole.innerHTML = this.stats();
+	render(state) {
+		this.printNumbers(state);
+		this.stats(state);
 	}
 
 	printNumbers() {
 		let {min, max} = this.store.state;
-		let str = '';
+		Observable.range(min, max - min + 1)
+			.reduce((str, n) => str += `<button data-number="${n}" type="button">${n}</button>`, '')
+			.last()
+			.subscribe((str) => this.numbersButtons.innerHTML = str);
 
-		while(min <= max) {
-			str += `<button data-number="${min}" type="button">${min}</button>`;
-			min++;
-		}
-		return str;
 	}
 
 	round() {
@@ -129,7 +130,6 @@ class NumberGame  {
 
 	guessSuccess() {
 		this.currentRoundState.user = 1;
-		this.roundFinished = true;
 	}
 
 	guessFailure() {
@@ -141,7 +141,7 @@ class NumberGame  {
 	}
 
 	finish() {
-		this.roundFinished = true;
+		this.currentRoundState = {};
 		this.store.reset();
 	}
 
@@ -160,18 +160,19 @@ class NumberGame  {
 	}
 
 	stats() {
-		var state = this.store.state.gameResults;
-		var l = state.length;
-		if(l === 0) {
-			return "There is no ongoing game";
+		let state = this.store.state.gameResults;
+		let l = state.length;
+		if (l === 0) {
+			this.statsConsole.innerHTML = ''
+			return false;
 		}
 
 		//destructuring and state getters :D
-		var [c, u, walkovers] = this.calculateTotalResult(state);
-		var {userName, min, max} = this.store.state;
-		var {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.getCurrentRoundFromState();
+		let { c, u, walkovers } = this.calculateTotalResult(state);
+		let { userName, min, max } = this.store.state;
+		let {comp: lastRoundComputer, user: lastRoundUser, lastShot: lastShot, shots: shots, n: n} = this.getCurrentRoundFromState();
 
-		var resultTxt = '';
+		let resultTxt = '';
 
 		//prepare stats content html
 		if (this.roundFinished) {
@@ -190,29 +191,28 @@ class NumberGame  {
 				<h3>Computer ${c} : ${u} ${userName}</h3>
 			`;
 
-		return statsText;
+		this.statsConsole.innerHTML = statsText;
 	}
 
 	calculateTotalResult(state) {
-		var c = 0;
-		var u = 0;
-		var walkovers = 0;
-		state.forEach(function(v, i) {
-			u += v.user;
-			c += v.comp;
+		return state.reduce(function(acc, v, i) {
+			acc.u += v.user;
+			acc.c += v.comp;
 			if(v.comp === 1 && v.shots < 3) {
-				walkovers++;
+				acc.walkovers++;
 			}
-		});
-		return [c, u, walkovers];
+			return acc;
+		}, {c: 0, u: 0, walkovers: 0});
+
 	}
 
 	drawLots() {
-		let {min, max} = this.store.state;
+		let { min, max } = this.store.state;
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
 	saveState() {
+		//WRONG! Mutates state directly - TODO: refactor using immutable data
 		let gameResults = this.store.state.gameResults;
 		gameResults[gameResults.length - 1] = this.currentRoundState;
 		this.store.setState({
@@ -237,12 +237,15 @@ class NumberGame  {
 		this.shots = this.currentRoundState.shots;
 		this.roundFinished = this.checkIfGameFinished();
 
-		this.render();
+		this.render(this.store.state);
 		return true;
 	}
 
 	checkIfGameFinished() {
-		return this.currentRoundState.user || this.currentRoundState.comp;
+		if (!this.store.state.gameResults.length) {
+			return true;
+		}
+		return this.currentRoundState.user || this.currentRoundState.comp || this.currentRoundState.shots > 3;
 	}
 };
 

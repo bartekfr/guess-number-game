@@ -14,7 +14,7 @@ module.exports =  {
 				loader: 'babel-loader',
 				options: {
 					presets: ['es2015'],
-					plugins: ["transform-object-assign"]
+					plugins: ["transform-object-assign", "transform-object-rest-spread"]
 				}
 			}]
 		}]
