@@ -183,12 +183,10 @@ class NumberGame  {
 	}
 
 	calculateTotalResult(state) {
-		return state.reduce(function(acc, v, i) {
-			acc.u += v.user;
-			acc.c += v.comp;
-			return acc;
-		}, {c: 0, u: 0 });
-
+		return state.reduce((acc, v, i) => ({
+			u: acc.u += v.user,
+			c: acc.c += v.comp
+		}), {c: 0, u: 0 });
 	}
 
 	drawLots() {
